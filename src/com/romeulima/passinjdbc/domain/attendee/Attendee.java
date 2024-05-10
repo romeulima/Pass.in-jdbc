@@ -2,10 +2,11 @@ package com.romeulima.passinjdbc.domain.attendee;
 
 import com.romeulima.passinjdbc.domain.event.Event;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Attendee {
+public class Attendee implements Serializable {
 
     private Integer id;
 

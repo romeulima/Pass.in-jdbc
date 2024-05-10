@@ -1,8 +1,9 @@
 package com.romeulima.passinjdbc.domain.event;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Event {
+public class Event implements Serializable {
 
     private Integer id;
 
@@ -15,6 +16,12 @@ public class Event {
     private Integer maximumAttendees;
 
     public Event(){
+    }
+
+    public Event(String title, String details, Integer maximumAttendees) {
+        this.title = title;
+        this.details = details;
+        this.maximumAttendees = maximumAttendees;
     }
 
     public Event(Integer id, String title, String details, String slug, Integer maximumAttendees) {
