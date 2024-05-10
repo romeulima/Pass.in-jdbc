@@ -29,6 +29,12 @@ public class Attendee implements Serializable {
         this.event = event;
     }
 
+    public Attendee(String name, String email, Event event) {
+        this.name = name;
+        this.email = email;
+        this.event = event;
+    }
+
     public Integer getId() {
         return id;
     }

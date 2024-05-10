@@ -1,5 +1,7 @@
+import com.romeulima.passinjdbc.dao.AttendeeDao;
 import com.romeulima.passinjdbc.dao.EventDao;
 import com.romeulima.passinjdbc.dao.factory.DaoFactory;
+import com.romeulima.passinjdbc.domain.attendee.Attendee;
 import com.romeulima.passinjdbc.domain.event.Event;
 
 import java.util.List;
@@ -7,28 +9,15 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         EventDao eventDao = DaoFactory.createEventDao();
+        AttendeeDao attendeeDao = DaoFactory.createAttendeeDao();
 
-//        Event newEvent = new Event("Romeu Mentory", "Mentoria sobre carreira na programacao", 1000);
-//        eventDao.insert(newEvent);
-//        System.out.println("Novo evento registrado\n" + newEvent);
+        List<Attendee> attendees = attendeeDao.findAllAttendees();
 
-//        Event event = eventDao.findById(2);
-//        System.out.println(event);
-//
-//        System.out.println();
-//
-//        List<Event> eventList = eventDao.findAllEvents();
-//
-//        eventList.forEach(System.out::println);
+        attendees.forEach(System.out::println);
+        System.out.println();
 
-//        System.out.println();
-//        newEvent.setMaximumAttendees(2);
-//        newEvent.setTitle("Romeu - Mentoria");
-//        eventDao.update(newEvent);
+        List<Attendee> attendeesByEvent = attendeeDao.findByEvent(eventDao.findById(1));
 
-        Event event = eventDao.findById(2);
-        event.setTitle("Romeu - Mentory");
-        event.setMaximumAttendees(2);
-        eventDao.update(event);
+        attendeesByEvent.forEach(System.out::println);
     }
 }
