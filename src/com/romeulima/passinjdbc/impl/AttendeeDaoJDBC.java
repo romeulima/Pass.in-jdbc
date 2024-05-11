@@ -141,12 +141,49 @@ public class AttendeeDaoJDBC implements AttendeeDao {
 
     @Override
     public void update(Attendee attendee) {
+        try {
+            PreparedStatement pstm = connection.prepareStatement(
+                    "UPDATE attendees " +
+                            "SET name = ?, email = ?, event_id = ? " +
+                            "WHERE id = ?"
+            );
+            pstm.setString(1, attendee.getName());
+            pstm.setString(2, attendee.getEmail());
+            pstm.setInt(3, attendee.getEvent().getId());
+            pstm.setInt(4, attendee.getId());
+
+            int affectedRows = pstm.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new DbException("Unexpected error! No rows affected!");
+            }
+
+            System.out.println("Updated!");
+
+        } catch (SQLException ex) {
+            throw new DbException(ex.getMessage());
+        }
 
     }
 
     @Override
     public void deleteById(Integer id) {
+        try {
+            PreparedStatement pstm = connection.prepareStatement(
+                    "DELETE FROM attendees WHERE id = ?"
+            );
+            pstm.setInt(1, id);
+            int affectedRows = pstm.executeUpdate();
 
+            if (affectedRows == 0) {
+                throw new DbException("Unexpected error! No attendee was deleted");
+            }
+
+            System.out.println("Deleted");
+
+        } catch (SQLException ex) {
+            throw new DbException(ex.getMessage());
+        }
     }
 
     private Attendee instantiateAttendee(ResultSet rs, Event event) throws SQLException {
