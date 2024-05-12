@@ -22,9 +22,10 @@ public class EventDaoJDBC implements EventDao {
         try {
             PreparedStatement pstm = connection.prepareStatement(
                     "INSERT INTO events "
-                            + "(title, details, slug, maximum_attendees) "
-                            + "VALUES (?, ?, ?, ?)"
-            , Statement.RETURN_GENERATED_KEYS);
+                    + "(title, details, slug, maximum_attendees) "
+                    + "VALUES (?, ?, ?, ?);",
+                    Statement.RETURN_GENERATED_KEYS);
+
             pstm.setString(1, e.getTitle());
             pstm.setString(2, e.getDetails());
             String slug =  createSlug(e.getTitle());
@@ -41,6 +42,7 @@ public class EventDaoJDBC implements EventDao {
                     e.setId(id);
                     e.setSlug(slug);
                 }
+
             } else {
                 throw new DbException("Unexpected error! No rows affected");
             }
@@ -48,36 +50,35 @@ public class EventDaoJDBC implements EventDao {
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
-
     }
 
     @Override
     public Event findById(Integer id) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "SELECT * FROM events WHERE id = ?;"
-            );
+                    "SELECT * FROM events WHERE id = ?");
+
             pstm.setInt(1, id);
+
             ResultSet rs = pstm.executeQuery();
 
             if (rs.next()) {
-                Event event = instantiateEvent(rs);
-
-                return event;
+                return instantiateEvent(rs);
             }
-            return null;
+
+            throw new DbException("Event not found with id: " + id);
+
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
-
     }
 
     @Override
     public List<Event> findAllEvents() {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "SELECT * FROM events ORDER BY id"
-            );
+                    "SELECT * FROM events ORDER BY id");
+
             ResultSet rs = pstm.executeQuery();
 
             List<Event> list = new ArrayList<>();
@@ -91,16 +92,16 @@ public class EventDaoJDBC implements EventDao {
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
-
     }
 
     @Override
     public void update(Event e) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "UPDATE events SET title = ?, details = ?, slug = ?, maximum_attendees = ? " +
-                            "WHERE id = ?"
-            );
+                    "UPDATE events "
+                    + "SET title = ?, details = ?, slug = ?, maximum_attendees = ? "
+                    + "WHERE id = ?");
+
             pstm.setString(1, e.getTitle());
             pstm.setString(2, e.getDetails());
             String slug = createSlug(e.getTitle());
@@ -112,25 +113,31 @@ public class EventDaoJDBC implements EventDao {
 
             if (affectedRows == 0) {
                 throw new DbException("No rows affected");
+            } else {
+                System.out.println("Updated!");
             }
 
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
-
-
     }
 
     @Override
     public void deleteById(Integer id) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "DELETE FROM events WHERE id = ?"
-            );
+                    "DELETE FROM events WHERE id = ?");
 
             pstm.setInt(1, id);
 
-            pstm.executeUpdate();
+            int affectedRows = pstm.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new DbException("No rows affected");
+            } else {
+                System.out.println("Deleted!");
+            }
+
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }

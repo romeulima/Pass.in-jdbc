@@ -7,10 +7,14 @@ import java.util.List;
 
 public interface AttendeeDao {
     void insert(Attendee event);
+
     Attendee findById(Integer id);
+
     List<Attendee> findAllAttendees();
+
     List<Attendee> findByEvent(Event event);
+
     void update(Attendee attendee);
+
     void deleteById(Integer id);
 }
-// Create, Read, Update, delete - CRUD

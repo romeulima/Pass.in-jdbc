@@ -14,7 +14,7 @@ import java.util.*;
 public class AttendeeDaoJDBC implements AttendeeDao {
 
     private final Connection connection;
-    private static final EventDao eventDao = DaoFactory.createEventDao();
+    private final EventDao eventDao = DaoFactory.createEventDao();
 
     public AttendeeDaoJDBC(Connection connection) {
         this.connection = connection;
@@ -25,9 +25,9 @@ public class AttendeeDaoJDBC implements AttendeeDao {
         try {
             PreparedStatement pstm = connection.prepareStatement(
                     "INSERT INTO attendees "
-                            + "(name, email, event_id) "
-                            + "VALUES (?, ?, ?)"
-                    , Statement.RETURN_GENERATED_KEYS);
+                    + "(name, email, event_id) "
+                    + "VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+
             pstm.setString(1, attendee.getName());
             pstm.setString(2, attendee.getEmail());
             pstm.setInt(3, attendee.getEvent().getId());
@@ -42,6 +42,7 @@ public class AttendeeDaoJDBC implements AttendeeDao {
                     attendee.setId(id);
                     attendee.setCreatedAt(LocalDateTime.now());
                 }
+
              } else {
                 throw new DbException("Unexpected error! No rows affected");
             }
@@ -54,22 +55,22 @@ public class AttendeeDaoJDBC implements AttendeeDao {
     public Attendee findById(Integer id) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "SELECT attendees.*, events.title as EventName " +
-                            "FROM attendees INNER JOIN events " +
-                            "ON attendees.event_id = events.id " +
-                            "WHERE attendees.id = ?"
-            );
+                    "SELECT attendees.*, events.title as EventName "
+                    + "FROM attendees INNER JOIN events "
+                    + "ON attendees.event_id = events.id "
+                    + "WHERE attendees.id = ?");
+
             pstm.setInt(1, id);
+
             ResultSet rs = pstm.executeQuery();
 
             if (rs.next()) {
                 Event event = eventDao.findById(rs.getInt("event_id"));
-                Attendee attendee = instantiateAttendee(rs, event);
 
-                return attendee;
+                return instantiateAttendee(rs, event);
             }
 
-            return null;
+            throw new DbException("Attendee not found with id: " + id);
 
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
@@ -80,11 +81,11 @@ public class AttendeeDaoJDBC implements AttendeeDao {
     public List<Attendee> findAllAttendees() {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "SELECT a.*, e.title as EventName " +
-                            "FROM attendees AS a INNER JOIN events AS e " +
-                            "ON a.event_id = e.id " +
-                            "ORDER BY a.name"
-            );
+                    "SELECT a.*, e.title as EventName "
+                    + "FROM attendees AS a INNER JOIN events AS e "
+                    + "ON a.event_id = e.id "
+                    + "ORDER BY a.name");
+
             ResultSet rs = pstm.executeQuery();
 
             List<Attendee> attendeeList = new ArrayList<>();
@@ -111,13 +112,13 @@ public class AttendeeDaoJDBC implements AttendeeDao {
     public List<Attendee> findByEvent(Event e) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "SELECT a.*, e.title AS EventName " +
-                            "FROM attendees AS a INNER JOIN events AS e " +
-                            "ON a.event_id = e.id " +
-                            "WHERE a.event_id = ? ORDER BY a.name;"
-            );
+                    "SELECT a.*, e.title AS EventName "
+                    + "FROM attendees AS a INNER JOIN events AS e "
+                    + "ON a.event_id = e.id "
+                    + "WHERE a.event_id = ? ORDER BY a.name;");
 
             pstm.setInt(1, e.getId());
+
             ResultSet rs = pstm.executeQuery();
 
             List<Attendee> attendeeList = new ArrayList<>();
@@ -127,13 +128,14 @@ public class AttendeeDaoJDBC implements AttendeeDao {
                 Event event = map.get(rs.getInt("event_id"));
                 if (Objects.isNull(event)) {
                     event = eventDao.findById(rs.getInt("event_id"));
-                    map.put(rs.getInt("event_id"),event);
+                    map.put(rs.getInt("event_id"), event);
                 }
                 Attendee attendee = instantiateAttendee(rs, event);
                 attendeeList.add(attendee);
             }
 
             return attendeeList;
+
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
@@ -143,10 +145,10 @@ public class AttendeeDaoJDBC implements AttendeeDao {
     public void update(Attendee attendee) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "UPDATE attendees " +
-                            "SET name = ?, email = ?, event_id = ? " +
-                            "WHERE id = ?"
-            );
+                    "UPDATE attendees "
+                    + "SET name = ?, email = ?, event_id = ? "
+                    + "WHERE id = ?");
+
             pstm.setString(1, attendee.getName());
             pstm.setString(2, attendee.getEmail());
             pstm.setInt(3, attendee.getEvent().getId());
@@ -163,16 +165,16 @@ public class AttendeeDaoJDBC implements AttendeeDao {
         } catch (SQLException ex) {
             throw new DbException(ex.getMessage());
         }
-
     }
 
     @Override
     public void deleteById(Integer id) {
         try {
             PreparedStatement pstm = connection.prepareStatement(
-                    "DELETE FROM attendees WHERE id = ?"
-            );
+                    "DELETE FROM attendees WHERE id = ?");
+
             pstm.setInt(1, id);
+
             int affectedRows = pstm.executeUpdate();
 
             if (affectedRows == 0) {
@@ -195,5 +197,4 @@ public class AttendeeDaoJDBC implements AttendeeDao {
         attendee.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         return attendee;
     }
-
 }
