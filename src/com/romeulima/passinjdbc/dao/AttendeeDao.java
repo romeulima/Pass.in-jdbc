@@ -6,7 +6,7 @@ import com.romeulima.passinjdbc.domain.event.Event;
 import java.util.List;
 
 public interface AttendeeDao {
-    void insert(Attendee event);
+    void insert(Attendee attendee);
 
     Attendee findById(Integer id);
 

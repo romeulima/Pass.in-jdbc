@@ -32,6 +32,13 @@ public class AttendeeDaoJDBC implements AttendeeDao {
             pstm.setString(2, attendee.getEmail());
             pstm.setInt(3, attendee.getEvent().getId());
 
+            this.verifyAttendeeOnEvent(attendee);
+
+            Event event = eventDao.findById(attendee.getEvent().getId());
+            List<Attendee> attendeeListByEvent = this.findByEvent(event);
+
+            if (attendeeListByEvent.size() >= event.getMaximumAttendees()) throw new DbException("Event is full");
+
             int affectedRows = pstm.executeUpdate();
 
             if (affectedRows > 0) {
@@ -197,4 +204,15 @@ public class AttendeeDaoJDBC implements AttendeeDao {
         attendee.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         return attendee;
     }
+
+    private void verifyAttendeeOnEvent(Attendee attendee) {
+        List<Attendee> attendeesEventList = this.findByEvent(attendee.getEvent());
+
+        Optional<Attendee> attendeeVerify = attendeesEventList.stream()
+                .filter(a -> Objects.equals(a.getEmail(), attendee.getEmail()))
+                .findFirst();
+
+        if (attendeeVerify.isPresent()) throw new DbException("Attendee is already cadastred on this event");
+    }
+
 }
